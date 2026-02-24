@@ -3,8 +3,10 @@ import Login from './Login';
 import Register from './Register';
 import VideoUpload from './VideoUpload';
 import Layout from './Layout';
+import FolderList from './FolderList';
+import ManualList from './ManualList';
 
-type Page = 'upload' | 'steps' | 'settings';
+type Page = 'upload' | 'steps' | 'settings' | 'folders' | 'users' | 'permissions';
 
 function Sidebar({ onSelect, current, onLogout }: { onSelect: (p: Page) => void; current: Page; onLogout: () => void }) {
   return (
@@ -12,6 +14,9 @@ function Sidebar({ onSelect, current, onLogout }: { onSelect: (p: Page) => void;
       <div style={{ fontWeight: 700, fontSize: 18, color: '#2563eb', textAlign: 'center', marginBottom: 24 }}>メニュー</div>
       <button style={sidebarBtn(current === 'upload')} onClick={() => onSelect('upload')}>動画アップロード</button>
       <button style={sidebarBtn(current === 'steps')} onClick={() => onSelect('steps')}>手順一覧</button>
+      <button style={sidebarBtn(current === 'folders')} onClick={() => onSelect('folders')}>フォルダ管理</button>
+      <button style={sidebarBtn(current === 'users')} onClick={() => onSelect('users')}>ユーザー管理</button>
+      <button style={sidebarBtn(current === 'permissions')} onClick={() => onSelect('permissions')}>権限管理</button>
       <button style={sidebarBtn(current === 'settings')} onClick={() => onSelect('settings')}>設定</button>
       <div style={{ flex: 1 }} />
       <button style={{ ...sidebarBtn(false), color: '#e11d48', fontWeight: 600 }} onClick={onLogout}>ログアウト</button>
@@ -38,6 +43,10 @@ function sidebarBtn(active: boolean): React.CSSProperties {
 export default function App() {
   const [page, setPage] = useState<'login' | 'register' | Page>('login');
   const [authed, setAuthed] = useState(() => !!localStorage.getItem('access_token'));
+
+  // デバッグ用ログ
+  console.log('access_token:', localStorage.getItem('access_token'));
+  console.log('authed:', authed);
 
   const handleSwitch = (to: typeof page) => {
     setPage(to);
@@ -71,7 +80,19 @@ export default function App() {
       ) : (
         <>
           {page === 'upload' && <VideoUpload />}
-          {page === 'steps' && <div>手順一覧（今後実装）</div>}
+          {page === 'steps' && (
+            <div style={{ display: 'flex', gap: 32 }}>
+              <div style={{ minWidth: 260, flex: '0 0 260px' }}>
+                <FolderList />
+              </div>
+              <div style={{ flex: 1 }}>
+                <ManualList />
+              </div>
+            </div>
+          )}
+          {page === 'folders' && <div>フォルダ管理（ダミー画面）</div>}
+          {page === 'users' && <div>ユーザー管理（ダミー画面）</div>}
+          {page === 'permissions' && <div>権限管理（ダミー画面）</div>}
           {page === 'settings' && <div>設定（今後実装）</div>}
         </>
       )}

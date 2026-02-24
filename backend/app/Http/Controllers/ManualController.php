@@ -1,3 +1,55 @@
+    /**
+     * フォルダ権限一覧取得
+     */
+    public function folderPermissions($folderId)
+    {
+        $folder = \App\Models\Folder::findOrFail($folderId);
+        $permissions = $folder->folderPermissions()->with('user')->get();
+        return response()->json($permissions);
+    }
+
+    /**
+     * フォルダ権限追加・更新
+     */
+    public function setFolderPermission($folderId, \Illuminate\Http\Request $request)
+    {
+        $validated = $request->validate([
+            'user_id' => 'nullable|integer|exists:users,id',
+            'role' => 'nullable|string',
+            'permission' => 'required|in:view,edit',
+        ]);
+        $folder = \App\Models\Folder::findOrFail($folderId);
+        $perm = \App\Models\FolderPermission::updateOrCreate(
+            [
+                'folder_id' => $folder->id,
+                'user_id' => $validated['user_id'] ?? null,
+                'role' => $validated['role'] ?? null,
+                'permission' => $validated['permission'],
+            ],
+            []
+        );
+        return response()->json($perm);
+    }
+
+    /**
+     * フォルダ権限削除
+     */
+    public function deleteFolderPermission($folderId, \Illuminate\Http\Request $request)
+    {
+        $validated = $request->validate([
+            'user_id' => 'nullable|integer|exists:users,id',
+            'role' => 'nullable|string',
+            'permission' => 'required|in:view,edit',
+        ]);
+        $folder = \App\Models\Folder::findOrFail($folderId);
+        \App\Models\FolderPermission::where([
+            'folder_id' => $folder->id,
+            'user_id' => $validated['user_id'] ?? null,
+            'role' => $validated['role'] ?? null,
+            'permission' => $validated['permission'],
+        ])->delete();
+        return response()->json(['message' => 'deleted']);
+    }
 <?php
 
 namespace App\Http\Controllers;

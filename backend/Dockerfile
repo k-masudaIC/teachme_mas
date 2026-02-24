@@ -17,6 +17,13 @@ COPY --from=composer:2.6 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www/html
 
+
+
+
+
+# php.iniを直接配置（最優先で読み込ませる）
+COPY php.ini /usr/local/etc/php/php.ini
+
 EXPOSE 9000
 
 CMD ["php-fpm"]

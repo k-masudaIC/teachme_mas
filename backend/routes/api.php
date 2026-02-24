@@ -27,6 +27,10 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/folders/{id}', [\App\Http\Controllers\ManualController::class, 'updateFolder']);
         Route::delete('/folders/{id}', [\App\Http\Controllers\ManualController::class, 'deleteFolder']);
         Route::post('/folders/reorder', [\App\Http\Controllers\ManualController::class, 'reorderFolders']);
+        // フォルダ権限
+        Route::get('/folders/{id}/permissions', [\App\Http\Controllers\ManualController::class, 'folderPermissions']);
+        Route::post('/folders/{id}/permissions', [\App\Http\Controllers\ManualController::class, 'setFolderPermission']);
+        Route::delete('/folders/{id}/permissions', [\App\Http\Controllers\ManualController::class, 'deleteFolderPermission']);
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me', [AuthController::class, 'me']);
 
