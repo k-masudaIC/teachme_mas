@@ -1,5 +1,16 @@
 version: '3.9'
 services:
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: teachme_phpmyadmin
+    environment:
+      PMA_HOST: db
+      PMA_USER: root
+      PMA_PASSWORD: root
+    ports:
+      - "8081:80"
+    depends_on:
+      - db
   backend:
     build:
       context: ./backend
