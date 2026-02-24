@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import Login from './Login';
 import Register from './Register';
 import VideoUpload from './VideoUpload';
+import Layout from './Layout';
 
 export default function App() {
   const [page, setPage] = useState<'login' | 'register' | 'upload'>('login');
@@ -17,20 +18,22 @@ export default function App() {
     else setAuthed(false);
   }, [page]);
 
-  if (!authed) {
-    return (
-      <div>
-        {page === 'login' ? <Login /> : <Register />}
-        <div style={{ textAlign: 'center', marginTop: 16 }}>
-          {page === 'login' ? (
-            <button onClick={() => handleSwitch('register')}>新規登録へ</button>
-          ) : (
-            <button onClick={() => handleSwitch('login')}>ログインへ</button>
-          )}
-        </div>
-      </div>
-    );
-  }
-
-  return <VideoUpload />;
+  return (
+    <Layout>
+      {!authed ? (
+        <>
+          {page === 'login' ? <Login /> : <Register />}
+          <div style={{ textAlign: 'center', marginTop: 16 }}>
+            {page === 'login' ? (
+              <button onClick={() => handleSwitch('register')}>新規登録へ</button>
+            ) : (
+              <button onClick={() => handleSwitch('login')}>ログインへ</button>
+            )}
+          </div>
+        </>
+      ) : (
+        <VideoUpload />
+      )}
+    </Layout>
+  );
 }
