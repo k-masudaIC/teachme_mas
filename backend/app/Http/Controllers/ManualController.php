@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use App\Models\Manual;
 use App\Models\ManualVideo;
+use App\Jobs\VideoProcessingJob;
 
 class ManualController extends Controller
 {
@@ -30,6 +31,9 @@ class ManualController extends Controller
             'original_filename' => $file->getClientOriginalName(),
             'processing_status' => 'pending',
         ]);
+
+        // 非同期ジョブをディスパッチ
+        VideoProcessingJob::dispatch($video->id);
 
         return response()->json($video, 201);
     }
