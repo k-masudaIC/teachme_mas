@@ -19,12 +19,14 @@ class AuthController extends Controller
             'name' => 'required|string|max:100',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:8',
+            'role' => 'in:admin,user', // 任意で指定可能
         ]);
 
         $user = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
+            'role' => $validated['role'] ?? 'user',
         ]);
 
         $token = $user->createToken('auth_token')->plainTextToken;
@@ -33,6 +35,7 @@ class AuthController extends Controller
             'access_token' => $token,
             'token_type' => 'Bearer',
             'user' => $user,
+            'role' => $user->role,
         ], 201);
     }
 
@@ -60,6 +63,7 @@ class AuthController extends Controller
             'access_token' => $token,
             'token_type' => 'Bearer',
             'user' => $user,
+            'role' => $user->role,
         ]);
     }
 

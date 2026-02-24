@@ -26,4 +26,14 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // 動画アップロード
     Route::post('/manuals/{manual}/videos', [\App\Http\Controllers\ManualController::class, 'uploadVideo']);
+    // 手順（ステップ）一覧取得
+    Route::get('/manuals/{manual}/steps', [\App\Http\Controllers\ManualController::class, 'steps']);
+    // ステップ追加
+    Route::post('/manuals/{manual}/steps', [\App\Http\Controllers\ManualController::class, 'addStep']);
+    // ステップ更新
+    Route::put('/manuals/{manual}/steps/{step}', [\App\Http\Controllers\ManualController::class, 'updateStep']);
+    // ステップ削除
+    Route::delete('/manuals/{manual}/steps/{step}', [\App\Http\Controllers\ManualController::class, 'deleteStep']);
+    // ステップ並び替え
+    Route::post('/manuals/{manual}/steps/reorder', [\App\Http\Controllers\ManualController::class, 'reorderSteps']);
 });

@@ -37,4 +37,79 @@ class ManualController extends Controller
 
         return response()->json($video, 201);
     }
+
+    /**
+     * 指定マニュアルのステップ一覧取得
+     */
+    public function steps($manualId)
+    {
+        $steps = \App\Models\ManualStep::where('manual_id', $manualId)
+            ->orderBy('step_number')
+            ->get();
+        return response()->json($steps);
+    }
+
+    /**
+     * ステップ追加
+     */
+    public function addStep($manualId, \Illuminate\Http\Request $request)
+    {
+        $validated = $request->validate([
+            'step_number' => 'required|integer',
+            'title' => 'required|string|max:255',
+            'body' => 'nullable|string',
+            'image_path' => 'nullable|string|max:500',
+        ]);
+        $step = \App\Models\ManualStep::create([
+            'manual_id' => $manualId,
+            'step_number' => $validated['step_number'],
+            'title' => $validated['title'],
+            'body' => $validated['body'] ?? null,
+            'image_path' => $validated['image_path'] ?? null,
+        ]);
+        return response()->json($step, 201);
+    }
+
+    /**
+     * ステップ更新
+     */
+    public function updateStep($manualId, $stepId, \Illuminate\Http\Request $request)
+    {
+        $step = \App\Models\ManualStep::where('manual_id', $manualId)->findOrFail($stepId);
+        $validated = $request->validate([
+            'title' => 'sometimes|required|string|max:255',
+            'body' => 'nullable|string',
+            'image_path' => 'nullable|string|max:500',
+        ]);
+        $step->update($validated);
+        return response()->json($step);
+    }
+
+    /**
+     * ステップ削除
+     */
+    public function deleteStep($manualId, $stepId)
+    {
+        $step = \App\Models\ManualStep::where('manual_id', $manualId)->findOrFail($stepId);
+        $step->delete();
+        return response()->json(['message' => 'deleted']);
+    }
+
+    /**
+     * ステップ並び替え
+     */
+    public function reorderSteps($manualId, \Illuminate\Http\Request $request)
+    {
+        $validated = $request->validate([
+            'orders' => 'required|array',
+            'orders.*.id' => 'required|integer',
+            'orders.*.step_number' => 'required|integer',
+        ]);
+        foreach ($validated['orders'] as $order) {
+            \App\Models\ManualStep::where('manual_id', $manualId)
+                ->where('id', $order['id'])
+                ->update(['step_number' => $order['step_number']]);
+        }
+        return response()->json(['message' => 'reordered']);
+    }
 }
