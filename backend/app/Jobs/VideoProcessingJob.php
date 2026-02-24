@@ -1,10 +1,11 @@
-use App\Models\ManualVideo;
-use App\Models\ManualStep;
-use Illuminate\Support\Facades\Log;
+
 <?php
 
 namespace App\Jobs;
 
+use App\Models\ManualVideo;
+use App\Models\ManualStep;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 

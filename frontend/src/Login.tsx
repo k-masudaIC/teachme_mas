@@ -31,16 +31,86 @@ export default function Login() {
   };
 
   return (
-    <div style={{ maxWidth: 400, margin: '2rem auto', padding: 20, border: '1px solid #ccc', borderRadius: 8 }}>
-      <h2>ログイン</h2>
-      <form onSubmit={handleLogin}>
-        <input ref={emailRef} type="email" placeholder="メールアドレス" required disabled={loading} style={{ width: '100%', marginBottom: 8 }} />
-        <input ref={passwordRef} type="password" placeholder="パスワード" required disabled={loading} style={{ width: '100%', marginBottom: 8 }} />
-        <button type="submit" disabled={loading} style={{ width: '100%' }}>
-          {loading ? 'ログイン中...' : 'ログイン'}
-        </button>
-      </form>
-      <div style={{ marginTop: 16 }}>{message}</div>
+    <div style={{
+      minHeight: '100vh',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      background: 'linear-gradient(120deg, #f0f4f8 0%, #e0e7ef 100%)',
+      fontFamily: '"Segoe UI", "Noto Sans JP", Arial, sans-serif',
+    }}>
+      <div style={{
+        width: 380,
+        background: '#fff',
+        borderRadius: 16,
+        boxShadow: '0 4px 24px rgba(0,0,0,0.08)',
+        padding: '2.5rem 2rem',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+      }}>
+        <div style={{ marginBottom: 24, textAlign: 'center' }}>
+          <img src="/logo192.png" alt="teachme.mas" style={{ width: 48, marginBottom: 8 }} />
+          <h1 style={{ fontWeight: 700, fontSize: 28, margin: 0, color: '#2d3748' }}>teachme.mas</h1>
+          <div style={{ color: '#718096', fontSize: 15, marginTop: 4 }}>社内業務マニュアル自動生成システム</div>
+        </div>
+        <form onSubmit={handleLogin} style={{ width: '100%' }}>
+          <div style={{ marginBottom: 18 }}>
+            <label style={{ fontWeight: 500, color: '#4a5568', fontSize: 15 }}>メールアドレス</label>
+            <input ref={emailRef} type="email" placeholder="your@email.com" required disabled={loading}
+              style={{
+                width: '100%',
+                padding: '10px 12px',
+                border: '1px solid #cbd5e1',
+                borderRadius: 8,
+                marginTop: 6,
+                fontSize: 16,
+                background: '#f8fafc',
+                outline: 'none',
+                marginBottom: 2
+              }}
+            />
+          </div>
+          <div style={{ marginBottom: 18 }}>
+            <label style={{ fontWeight: 500, color: '#4a5568', fontSize: 15 }}>パスワード</label>
+            <input ref={passwordRef} type="password" placeholder="パスワード" required disabled={loading}
+              style={{
+                width: '100%',
+                padding: '10px 12px',
+                border: '1px solid #cbd5e1',
+                borderRadius: 8,
+                marginTop: 6,
+                fontSize: 16,
+                background: '#f8fafc',
+                outline: 'none',
+                marginBottom: 2
+              }}
+            />
+          </div>
+          <button type="submit" disabled={loading}
+            style={{
+              width: '100%',
+              background: 'linear-gradient(90deg, #4f8cff 0%, #38b2ac 100%)',
+              color: '#fff',
+              fontWeight: 600,
+              fontSize: 17,
+              border: 'none',
+              borderRadius: 8,
+              padding: '12px 0',
+              marginTop: 8,
+              boxShadow: '0 2px 8px rgba(79,140,255,0.08)',
+              cursor: loading ? 'not-allowed' : 'pointer',
+              transition: 'background 0.2s',
+            }}
+          >
+            {loading ? 'ログイン中...' : 'ログイン'}
+          </button>
+        </form>
+        <div style={{ marginTop: 18, color: '#e53e3e', minHeight: 24, fontSize: 15 }}>{message}</div>
+        <div style={{ marginTop: 8, fontSize: 14, color: '#4a5568' }}>
+          アカウント未作成の方は <a href="/register" style={{ color: '#4f8cff', textDecoration: 'underline' }}>新規登録</a>
+        </div>
+      </div>
     </div>
   );
 }

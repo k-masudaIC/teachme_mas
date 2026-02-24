@@ -7,8 +7,8 @@ export default defineConfig({
     host: true,
     port: 5173,
     proxy: {
-      '/api': 'http://backend:9000',
-      '/storage': 'http://backend:9000',
+      '/api': 'http://nginx:80',
+      '/storage': 'http://nginx:80',
     },
   },
 });

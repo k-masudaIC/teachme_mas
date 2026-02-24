@@ -23,7 +23,9 @@ return new class extends Migration
             $table->timestamps();
             $table->softDeletes();
 
-            $table->fullText(['title', 'description'], 'ft_title_description'); // MySQLのみ対応
+            if (app('db')->getDriverName() === 'mysql') {
+                $table->fullText(['title', 'description'], 'ft_title_description');
+            }
             $table->index('folder_id', 'idx_folder_id');
             $table->foreign('user_id')->references('id')->on('users');
             // foldersテーブルはPhase2で有効化

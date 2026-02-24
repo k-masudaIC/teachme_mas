@@ -22,7 +22,8 @@ return new class extends Migration
 
             $table->index('manual_id', 'idx_manual_id');
             $table->unique(['manual_id', 'step_number'], 'uq_manual_step');
-            // $table->fullText('body', 'ft_body'); // MySQLのみ
+            if (app('db')->getDriverName() === 'mysql') {
+            }
             $table->foreign('manual_id')->references('id')->on('manuals');
         });
     }
