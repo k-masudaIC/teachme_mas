@@ -21,6 +21,12 @@ use App\Http\Controllers\AuthController;
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::middleware('auth:sanctum')->group(function () {
+        // フォルダ管理
+        Route::get('/folders', [\App\Http\Controllers\ManualController::class, 'folders']);
+        Route::post('/folders', [\App\Http\Controllers\ManualController::class, 'createFolder']);
+        Route::put('/folders/{id}', [\App\Http\Controllers\ManualController::class, 'updateFolder']);
+        Route::delete('/folders/{id}', [\App\Http\Controllers\ManualController::class, 'deleteFolder']);
+        Route::post('/folders/reorder', [\App\Http\Controllers\ManualController::class, 'reorderFolders']);
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me', [AuthController::class, 'me']);
 

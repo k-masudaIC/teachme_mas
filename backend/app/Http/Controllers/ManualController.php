@@ -112,4 +112,68 @@ class ManualController extends Controller
         }
         return response()->json(['message' => 'reordered']);
     }
+
+    /**
+     * フォルダ一覧取得
+     */
+    public function folders() {
+        $folders = \App\Models\Folder::with('children')->whereNull('parent_id')->orderBy('sort_order')->get();
+        return response()->json($folders);
+    }
+
+    /**
+     * フォルダ作成
+     */
+    public function createFolder(\Illuminate\Http\Request $request) {
+        $validated = $request->validate([
+            'name' => 'required|string|max:100',
+            'parent_id' => 'nullable|integer|exists:folders,id',
+            'sort_order' => 'nullable|integer',
+        ]);
+        $folder = \App\Models\Folder::create([
+            'name' => $validated['name'],
+            'parent_id' => $validated['parent_id'] ?? null,
+            'sort_order' => $validated['sort_order'] ?? 0,
+            'created_by' => $request->user()->id,
+        ]);
+        return response()->json($folder, 201);
+    }
+
+    /**
+     * フォルダ更新
+     */
+    public function updateFolder($id, \Illuminate\Http\Request $request) {
+        $folder = \App\Models\Folder::findOrFail($id);
+        $validated = $request->validate([
+            'name' => 'sometimes|required|string|max:100',
+            'parent_id' => 'nullable|integer|exists:folders,id',
+            'sort_order' => 'nullable|integer',
+        ]);
+        $folder->update($validated);
+        return response()->json($folder);
+    }
+
+    /**
+     * フォルダ削除
+     */
+    public function deleteFolder($id) {
+        $folder = \App\Models\Folder::findOrFail($id);
+        $folder->delete();
+        return response()->json(['message' => 'deleted']);
+    }
+
+    /**
+     * フォルダ並び替え
+     */
+    public function reorderFolders(\Illuminate\Http\Request $request) {
+        $validated = $request->validate([
+            'orders' => 'required|array',
+            'orders.*.id' => 'required|integer',
+            'orders.*.sort_order' => 'required|integer',
+        ]);
+        foreach ($validated['orders'] as $order) {
+            \App\Models\Folder::where('id', $order['id'])->update(['sort_order' => $order['sort_order']]);
+        }
+        return response()->json(['message' => 'reordered']);
+    }
 }
