@@ -44,19 +44,11 @@ export default function App() {
   const [page, setPage] = useState<'login' | 'register' | Page>('login');
   const [authed, setAuthed] = useState(() => !!localStorage.getItem('access_token'));
 
-  // デバッグ用ログ
-  console.log('access_token:', localStorage.getItem('access_token'));
-  console.log('authed:', authed);
-
-  const handleSwitch = (to: typeof page) => {
-    setPage(to);
-    if (to === 'upload' || to === 'steps' || to === 'settings') setAuthed(true);
+  // ✅ ログイン・登録成功時に管理画面へ遷移するコールバック
+  const handleAuthSuccess = () => {
+    setAuthed(true);
+    setPage('upload');
   };
-
-  React.useEffect(() => {
-    if (localStorage.getItem('access_token')) setAuthed(true);
-    else setAuthed(false);
-  }, [page]);
 
   const handleLogout = () => {
     localStorage.removeItem('access_token');
@@ -68,14 +60,10 @@ export default function App() {
     <Layout sidebar={authed ? <Sidebar onSelect={setPage as any} current={page as Page} onLogout={handleLogout} /> : undefined}>
       {!authed ? (
         <>
-          {page === 'login' ? <Login /> : <Register />}
-          <div style={{ textAlign: 'center', marginTop: 16 }}>
-            {page === 'login' ? (
-              <button onClick={() => handleSwitch('register')}>新規登録へ</button>
-            ) : (
-              <button onClick={() => handleSwitch('login')}>ログインへ</button>
-            )}
-          </div>
+          {page === 'login'
+            ? <Login onSuccess={handleAuthSuccess} onSwitchToRegister={() => setPage('register')} />
+            : <Register onSuccess={handleAuthSuccess} onSwitchToLogin={() => setPage('login')} />
+          }
         </>
       ) : (
         <>
@@ -90,10 +78,31 @@ export default function App() {
               </div>
             </div>
           )}
-          {page === 'folders' && <div>フォルダ管理（ダミー画面）</div>}
-          {page === 'users' && <div>ユーザー管理（ダミー画面）</div>}
-          {page === 'permissions' && <div>権限管理（ダミー画面）</div>}
-          {page === 'settings' && <div>設定（今後実装）</div>}
+          {page === 'folders' && <div style={{ padding: '1rem' }}><FolderList /></div>}
+          {page === 'users' && (
+            <div>
+              <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 12 }}>ユーザー管理</h2>
+              <p>システム利用ユーザーの一覧・新規登録・編集・削除ができます。<br />
+                <span style={{ color: '#888' }}>（今後、ユーザー追加・編集・削除、ロール切替、パスワードリセット等を実装予定）</span>
+              </p>
+            </div>
+          )}
+          {page === 'permissions' && (
+            <div>
+              <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 12 }}>権限管理</h2>
+              <p>フォルダやマニュアルごとのアクセス権限を管理できます。<br />
+                <span style={{ color: '#888' }}>（今後、フォルダ単位の権限設定・ロール管理機能を実装予定）</span>
+              </p>
+            </div>
+          )}
+          {page === 'settings' && (
+            <div>
+              <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 12 }}>設定</h2>
+              <p>システム全体の設定を行います。<br />
+                <span style={{ color: '#888' }}>（今後、各種設定画面を実装予定）</span>
+              </p>
+            </div>
+          )}
         </>
       )}
     </Layout>

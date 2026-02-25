@@ -1,6 +1,12 @@
 import { useRef, useState } from 'react';
 
-export default function Register() {
+// ✅ onSuccess・onSwitchToLoginをpropsで受け取る
+interface Props {
+  onSuccess: () => void;
+  onSwitchToLogin: () => void;
+}
+
+export default function Register({ onSuccess, onSwitchToLogin }: Props) {
   const nameRef = useRef<HTMLInputElement | null>(null);
   const emailRef = useRef<HTMLInputElement | null>(null);
   const passwordRef = useRef<HTMLInputElement | null>(null);
@@ -24,7 +30,7 @@ export default function Register() {
       if (!res.ok) throw new Error(await res.text());
       const data = await res.json();
       localStorage.setItem('access_token', data.access_token);
-      setMessage('登録成功！');
+      onSuccess(); // ✅ 管理画面へ遷移
     } catch (err: any) {
       setMessage('登録失敗: ' + err.message);
     } finally {
@@ -60,73 +66,34 @@ export default function Register() {
           <div style={{ marginBottom: 18 }}>
             <label style={{ fontWeight: 500, color: '#4a5568', fontSize: 15 }}>氏名</label>
             <input ref={nameRef} type="text" placeholder="氏名" required disabled={loading}
-              style={{
-                width: '100%',
-                padding: '10px 12px',
-                border: '1px solid #cbd5e1',
-                borderRadius: 8,
-                marginTop: 6,
-                fontSize: 16,
-                background: '#f8fafc',
-                outline: 'none',
-                marginBottom: 2
-              }}
+              style={{ width: '100%', padding: '10px 12px', border: '1px solid #cbd5e1', borderRadius: 8, marginTop: 6, fontSize: 16, background: '#f8fafc', outline: 'none', marginBottom: 2 }}
             />
           </div>
           <div style={{ marginBottom: 18 }}>
             <label style={{ fontWeight: 500, color: '#4a5568', fontSize: 15 }}>メールアドレス</label>
             <input ref={emailRef} type="email" placeholder="your@email.com" required disabled={loading}
-              style={{
-                width: '100%',
-                padding: '10px 12px',
-                border: '1px solid #cbd5e1',
-                borderRadius: 8,
-                marginTop: 6,
-                fontSize: 16,
-                background: '#f8fafc',
-                outline: 'none',
-                marginBottom: 2
-              }}
+              style={{ width: '100%', padding: '10px 12px', border: '1px solid #cbd5e1', borderRadius: 8, marginTop: 6, fontSize: 16, background: '#f8fafc', outline: 'none', marginBottom: 2 }}
             />
           </div>
           <div style={{ marginBottom: 18 }}>
             <label style={{ fontWeight: 500, color: '#4a5568', fontSize: 15 }}>パスワード</label>
             <input ref={passwordRef} type="password" placeholder="パスワード" required disabled={loading}
-              style={{
-                width: '100%',
-                padding: '10px 12px',
-                border: '1px solid #cbd5e1',
-                borderRadius: 8,
-                marginTop: 6,
-                fontSize: 16,
-                background: '#f8fafc',
-                outline: 'none',
-                marginBottom: 2
-              }}
+              style={{ width: '100%', padding: '10px 12px', border: '1px solid #cbd5e1', borderRadius: 8, marginTop: 6, fontSize: 16, background: '#f8fafc', outline: 'none', marginBottom: 2 }}
             />
           </div>
           <button type="submit" disabled={loading}
-            style={{
-              width: '100%',
-              background: 'linear-gradient(90deg, #4f8cff 0%, #38b2ac 100%)',
-              color: '#fff',
-              fontWeight: 600,
-              fontSize: 17,
-              border: 'none',
-              borderRadius: 8,
-              padding: '12px 0',
-              marginTop: 8,
-              boxShadow: '0 2px 8px rgba(79,140,255,0.08)',
-              cursor: loading ? 'not-allowed' : 'pointer',
-              transition: 'background 0.2s',
-            }}
+            style={{ width: '100%', background: 'linear-gradient(90deg, #4f8cff 0%, #38b2ac 100%)', color: '#fff', fontWeight: 600, fontSize: 17, border: 'none', borderRadius: 8, padding: '12px 0', marginTop: 8, cursor: loading ? 'not-allowed' : 'pointer' }}
           >
             {loading ? '登録中...' : '新規登録'}
           </button>
         </form>
         <div style={{ marginTop: 18, color: '#e53e3e', minHeight: 24, fontSize: 15 }}>{message}</div>
+        {/* ✅ ボタンに変更 */}
         <div style={{ marginTop: 8, fontSize: 14, color: '#4a5568' }}>
-          すでにアカウントをお持ちの方は <a href="/login" style={{ color: '#4f8cff', textDecoration: 'underline' }}>ログイン</a>
+          すでにアカウントをお持ちの方は{' '}
+          <button onClick={onSwitchToLogin} style={{ color: '#4f8cff', textDecoration: 'underline', background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: 0 }}>
+            ログイン
+          </button>
         </div>
       </div>
     </div>

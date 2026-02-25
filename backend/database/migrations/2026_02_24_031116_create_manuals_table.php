@@ -23,6 +23,7 @@ return new class extends Migration
             $table->timestamps();
             $table->softDeletes();
 
+            // FULLTEXT INDEXはMySQLのみ対応
             if (app('db')->getDriverName() === 'mysql') {
                 $table->fullText(['title', 'description'], 'ft_title_description');
             }

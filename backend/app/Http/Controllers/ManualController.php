@@ -1,55 +1,3 @@
-    /**
-     * フォルダ権限一覧取得
-     */
-    public function folderPermissions($folderId)
-    {
-        $folder = \App\Models\Folder::findOrFail($folderId);
-        $permissions = $folder->folderPermissions()->with('user')->get();
-        return response()->json($permissions);
-    }
-
-    /**
-     * フォルダ権限追加・更新
-     */
-    public function setFolderPermission($folderId, \Illuminate\Http\Request $request)
-    {
-        $validated = $request->validate([
-            'user_id' => 'nullable|integer|exists:users,id',
-            'role' => 'nullable|string',
-            'permission' => 'required|in:view,edit',
-        ]);
-        $folder = \App\Models\Folder::findOrFail($folderId);
-        $perm = \App\Models\FolderPermission::updateOrCreate(
-            [
-                'folder_id' => $folder->id,
-                'user_id' => $validated['user_id'] ?? null,
-                'role' => $validated['role'] ?? null,
-                'permission' => $validated['permission'],
-            ],
-            []
-        );
-        return response()->json($perm);
-    }
-
-    /**
-     * フォルダ権限削除
-     */
-    public function deleteFolderPermission($folderId, \Illuminate\Http\Request $request)
-    {
-        $validated = $request->validate([
-            'user_id' => 'nullable|integer|exists:users,id',
-            'role' => 'nullable|string',
-            'permission' => 'required|in:view,edit',
-        ]);
-        $folder = \App\Models\Folder::findOrFail($folderId);
-        \App\Models\FolderPermission::where([
-            'folder_id' => $folder->id,
-            'user_id' => $validated['user_id'] ?? null,
-            'role' => $validated['role'] ?? null,
-            'permission' => $validated['permission'],
-        ])->delete();
-        return response()->json(['message' => 'deleted']);
-    }
 <?php
 
 namespace App\Http\Controllers;
@@ -58,11 +6,67 @@ use Illuminate\Http\Request;
 
 use Illuminate\Support\Facades\Storage;
 use App\Models\Manual;
+use App\Models\Folder;
 use App\Models\ManualVideo;
 use App\Jobs\VideoProcessingJob;
 
 class ManualController extends Controller
 {
+    /**
+     * マニュアル一覧・検索・フィルタ・ページング・ソートAPI
+     * 検索: title, description, 作成者名, status, folder_id, created_at, updated_at
+     * フルテキスト: MySQL FULLTEXT(title, description)
+     * GET /api/manuals?query=xxx&status=published&folder_id=1&sort=created_at&order=desc&page=1&per_page=20
+     */
+    public function index(Request $request)
+    {
+        $query = Manual::query();
+
+        // 検索ワード
+        if ($request->filled('query')) {
+            $q = $request->input('query');
+            // MySQL FULLTEXT対応
+            if (app('db')->getDriverName() === 'mysql') {
+                $query->whereRaw('MATCH(title, description) AGAINST (? IN BOOLEAN MODE)', [$q]);
+            } else {
+                $query->where(function($sub) use ($q) {
+                    $sub->where('title', 'like', "%$q%")
+                        ->orWhere('description', 'like', "%$q%" );
+                });
+            }
+        }
+
+        // ステータス
+        if ($request->filled('status')) {
+            $query->where('status', $request->input('status'));
+        }
+        // フォルダ
+        if ($request->filled('folder_id')) {
+            $query->where('folder_id', $request->input('folder_id'));
+        }
+        // 作成者
+        if ($request->filled('user_id')) {
+            $query->where('user_id', $request->input('user_id'));
+        }
+        // 日付範囲
+        if ($request->filled('created_from')) {
+            $query->where('created_at', '>=', $request->input('created_from'));
+        }
+        if ($request->filled('created_to')) {
+            $query->where('created_at', '<=', $request->input('created_to'));
+        }
+
+        // ソート
+        $sort = $request->input('sort', 'created_at');
+        $order = $request->input('order', 'desc');
+        $query->orderBy($sort, $order);
+
+        // ページング
+        $perPage = (int) $request->input('per_page', 20);
+        $manuals = $query->with('user')->paginate($perPage);
+
+        return response()->json($manuals);
+    }
     /**
      * 動画アップロードAPI
      */
@@ -227,5 +231,57 @@ class ManualController extends Controller
             \App\Models\Folder::where('id', $order['id'])->update(['sort_order' => $order['sort_order']]);
         }
         return response()->json(['message' => 'reordered']);
+    }
+        /**
+     * フォルダ権限一覧取得
+     */
+    public function folderPermissions($folderId)
+    {
+        $folder = \App\Models\Folder::findOrFail($folderId);
+        $permissions = $folder->folderPermissions()->with('user')->get();
+        return response()->json($permissions);
+    }
+
+    /**
+     * フォルダ権限追加・更新
+     */
+    public function setFolderPermission($folderId, \Illuminate\Http\Request $request)
+    {
+        $validated = $request->validate([
+            'user_id' => 'nullable|integer|exists:users,id',
+            'role' => 'nullable|string',
+            'permission' => 'required|in:view,edit',
+        ]);
+        $folder = \App\Models\Folder::findOrFail($folderId);
+        $perm = \App\Models\FolderPermission::updateOrCreate(
+            [
+                'folder_id' => $folder->id,
+                'user_id' => $validated['user_id'] ?? null,
+                'role' => $validated['role'] ?? null,
+                'permission' => $validated['permission'],
+            ],
+            []
+        );
+        return response()->json($perm);
+    }
+
+    /**
+     * フォルダ権限削除
+     */
+    public function deleteFolderPermission($folderId, \Illuminate\Http\Request $request)
+    {
+        $validated = $request->validate([
+            'user_id' => 'nullable|integer|exists:users,id',
+            'role' => 'nullable|string',
+            'permission' => 'required|in:view,edit',
+        ]);
+        $folder = \App\Models\Folder::findOrFail($folderId);
+        \App\Models\FolderPermission::where([
+            'folder_id' => $folder->id,
+            'user_id' => $validated['user_id'] ?? null,
+            'role' => $validated['role'] ?? null,
+            'permission' => $validated['permission'],
+        ])->delete();
+        return response()->json(['message' => 'deleted']);
     }
 }

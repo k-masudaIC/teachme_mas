@@ -1,6 +1,12 @@
 import { useRef, useState } from 'react';
 
-export default function Login() {
+// ✅ onSuccess・onSwitchToRegisterをpropsで受け取る
+interface Props {
+  onSuccess: () => void;
+  onSwitchToRegister: () => void;
+}
+
+export default function Login({ onSuccess, onSwitchToRegister }: Props) {
   const emailRef = useRef<HTMLInputElement | null>(null);
   const passwordRef = useRef<HTMLInputElement | null>(null);
   const [message, setMessage] = useState('');
@@ -22,7 +28,7 @@ export default function Login() {
       if (!res.ok) throw new Error(await res.text());
       const data = await res.json();
       localStorage.setItem('access_token', data.access_token);
-      setMessage('ログイン成功！');
+      onSuccess(); // ✅ 管理画面へ遷移
     } catch (err: any) {
       setMessage('ログイン失敗: ' + err.message);
     } finally {
@@ -58,57 +64,28 @@ export default function Login() {
           <div style={{ marginBottom: 18 }}>
             <label style={{ fontWeight: 500, color: '#4a5568', fontSize: 15 }}>メールアドレス</label>
             <input ref={emailRef} type="email" placeholder="your@email.com" required disabled={loading}
-              style={{
-                width: '100%',
-                padding: '10px 12px',
-                border: '1px solid #cbd5e1',
-                borderRadius: 8,
-                marginTop: 6,
-                fontSize: 16,
-                background: '#f8fafc',
-                outline: 'none',
-                marginBottom: 2
-              }}
+              style={{ width: '100%', padding: '10px 12px', border: '1px solid #cbd5e1', borderRadius: 8, marginTop: 6, fontSize: 16, background: '#f8fafc', outline: 'none', marginBottom: 2 }}
             />
           </div>
           <div style={{ marginBottom: 18 }}>
             <label style={{ fontWeight: 500, color: '#4a5568', fontSize: 15 }}>パスワード</label>
             <input ref={passwordRef} type="password" placeholder="パスワード" required disabled={loading}
-              style={{
-                width: '100%',
-                padding: '10px 12px',
-                border: '1px solid #cbd5e1',
-                borderRadius: 8,
-                marginTop: 6,
-                fontSize: 16,
-                background: '#f8fafc',
-                outline: 'none',
-                marginBottom: 2
-              }}
+              style={{ width: '100%', padding: '10px 12px', border: '1px solid #cbd5e1', borderRadius: 8, marginTop: 6, fontSize: 16, background: '#f8fafc', outline: 'none', marginBottom: 2 }}
             />
           </div>
           <button type="submit" disabled={loading}
-            style={{
-              width: '100%',
-              background: 'linear-gradient(90deg, #4f8cff 0%, #38b2ac 100%)',
-              color: '#fff',
-              fontWeight: 600,
-              fontSize: 17,
-              border: 'none',
-              borderRadius: 8,
-              padding: '12px 0',
-              marginTop: 8,
-              boxShadow: '0 2px 8px rgba(79,140,255,0.08)',
-              cursor: loading ? 'not-allowed' : 'pointer',
-              transition: 'background 0.2s',
-            }}
+            style={{ width: '100%', background: 'linear-gradient(90deg, #4f8cff 0%, #38b2ac 100%)', color: '#fff', fontWeight: 600, fontSize: 17, border: 'none', borderRadius: 8, padding: '12px 0', marginTop: 8, cursor: loading ? 'not-allowed' : 'pointer' }}
           >
             {loading ? 'ログイン中...' : 'ログイン'}
           </button>
         </form>
         <div style={{ marginTop: 18, color: '#e53e3e', minHeight: 24, fontSize: 15 }}>{message}</div>
+        {/* ✅ ボタンに変更してApp側の画面切り替えを使う */}
         <div style={{ marginTop: 8, fontSize: 14, color: '#4a5568' }}>
-          アカウント未作成の方は <a href="/register" style={{ color: '#4f8cff', textDecoration: 'underline' }}>新規登録</a>
+          アカウント未作成の方は{' '}
+          <button onClick={onSwitchToRegister} style={{ color: '#4f8cff', textDecoration: 'underline', background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: 0 }}>
+            新規登録
+          </button>
         </div>
       </div>
     </div>

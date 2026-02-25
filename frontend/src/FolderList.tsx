@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import FolderPermissionEditor from './FolderPermissionEditor';
+import { apiGet, apiPost, apiPut, apiDelete } from './lib/api';
 
 interface Folder {
   id: number;
@@ -10,7 +11,6 @@ interface Folder {
   sort_order: number;
   children?: Folder[];
 }
-
 
 const FolderList: React.FC = () => {
   const [folders, setFolders] = useState<Folder[]>([]);
@@ -22,11 +22,7 @@ const FolderList: React.FC = () => {
 
   const fetchFolders = () => {
     setLoading(true);
-    fetch('/api/folders', { credentials: 'include' })
-      .then((res) => {
-        if (!res.ok) throw new Error('フォルダ一覧の取得に失敗しました');
-        return res.json();
-      })
+    apiGet<Folder[]>('/folders')
       .then((data) => setFolders(data))
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
@@ -39,16 +35,7 @@ const FolderList: React.FC = () => {
   const handleCreate = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newFolderName.trim()) return;
-    fetch('/api/folders', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ name: newFolderName }),
-    })
-      .then((res) => {
-        if (!res.ok) throw new Error('作成失敗');
-        return res.json();
-      })
+    apiPost('/folders', { name: newFolderName })
       .then(() => {
         setNewFolderName('');
         fetchFolders();
@@ -62,16 +49,7 @@ const FolderList: React.FC = () => {
   };
 
   const handleEditSubmit = (id: number) => {
-    fetch(`/api/folders/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ name: editingName }),
-    })
-      .then((res) => {
-        if (!res.ok) throw new Error('編集失敗');
-        return res.json();
-      })
+    apiPut(`/folders/${id}`, { name: editingName })
       .then(() => {
         setEditingId(null);
         setEditingName('');
@@ -82,25 +60,20 @@ const FolderList: React.FC = () => {
 
   const handleDelete = (id: number) => {
     if (!window.confirm('本当に削除しますか？')) return;
-    fetch(`/api/folders/${id}`, {
-      method: 'DELETE',
-      credentials: 'include',
-    })
-      .then((res) => {
-        if (!res.ok) throw new Error('削除失敗');
-        fetchFolders();
-      })
+    apiDelete(`/folders/${id}`)
+      .then(() => fetchFolders())
       .catch((e) => setError(e.message));
   };
 
-  if (loading) return <div>読み込み中...</div>;
-  if (error) return <div style={{ color: 'red' }}>{error}</div>;
+  // ✅ handleDropはこれ1つだけ（古いfetch版を削除）
+  const handleDrop = (dragId: number, hoverId: number) => {
+    apiPut(`/folders/${dragId}`, { parent_id: hoverId })
+      .then(() => fetchFolders())
+      .catch((e) => setError(e.message));
+  };
 
-
-  // DnD型
   const ItemType = 'FOLDER';
 
-  // ドラッグ＆ドロップ用のフォルダ行
   const FolderRow: React.FC<{
     folder: Folder;
     level: number;
@@ -146,23 +119,6 @@ const FolderList: React.FC = () => {
     );
   };
 
-  // ドロップ時の処理（例: 親変更）
-  const handleDrop = (dragId: number, hoverId: number) => {
-    // API連携例: dragIdのparent_idをhoverIdに変更
-    fetch(`/api/folders/${dragId}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ parent_id: hoverId }),
-    })
-      .then((res) => {
-        if (!res.ok) throw new Error('階層移動失敗');
-        return res.json();
-      })
-      .then(() => fetchFolders())
-      .catch((e) => setError(e.message));
-  };
-
   const renderFolders = (folders: Folder[], level = 0) => (
     <ul style={{ listStyle: 'none', paddingLeft: 0 }}>
       {folders.map((folder) => (
@@ -172,6 +128,9 @@ const FolderList: React.FC = () => {
       ))}
     </ul>
   );
+
+  if (loading) return <div>読み込み中...</div>;
+  if (error) return <div style={{ color: 'red' }}>{error}</div>;
 
   return (
     <DndProvider backend={HTML5Backend}>

@@ -1,49 +1,40 @@
 <?php
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Models\User;
-
-/*
-|--------------------------------------------------------------------------
-| API Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register API routes for your application. These
-| routes are loaded by the RouteServiceProvider within a group which
-| is assigned the "api" middleware group. Enjoy building your API!
-|
-*/
-
-
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ManualController;
 
+// 認証不要
 Route::post('/register', [AuthController::class, 'register']);
-Route::post('/login', [AuthController::class, 'login']);
-Route::middleware('auth:sanctum')->group(function () {
-        // フォルダ管理
-        Route::get('/folders', [\App\Http\Controllers\ManualController::class, 'folders']);
-        Route::post('/folders', [\App\Http\Controllers\ManualController::class, 'createFolder']);
-        Route::put('/folders/{id}', [\App\Http\Controllers\ManualController::class, 'updateFolder']);
-        Route::delete('/folders/{id}', [\App\Http\Controllers\ManualController::class, 'deleteFolder']);
-        Route::post('/folders/reorder', [\App\Http\Controllers\ManualController::class, 'reorderFolders']);
-        // フォルダ権限
-        Route::get('/folders/{id}/permissions', [\App\Http\Controllers\ManualController::class, 'folderPermissions']);
-        Route::post('/folders/{id}/permissions', [\App\Http\Controllers\ManualController::class, 'setFolderPermission']);
-        Route::delete('/folders/{id}/permissions', [\App\Http\Controllers\ManualController::class, 'deleteFolderPermission']);
-    Route::post('/logout', [AuthController::class, 'logout']);
-    Route::get('/me', [AuthController::class, 'me']);
+Route::post('/login',    [AuthController::class, 'login']);
 
-    // 動画アップロード
-    Route::post('/manuals/{manual}/videos', [\App\Http\Controllers\ManualController::class, 'uploadVideo']);
-    // 手順（ステップ）一覧取得
-    Route::get('/manuals/{manual}/steps', [\App\Http\Controllers\ManualController::class, 'steps']);
-    // ステップ追加
-    Route::post('/manuals/{manual}/steps', [\App\Http\Controllers\ManualController::class, 'addStep']);
-    // ステップ更新
-    Route::put('/manuals/{manual}/steps/{step}', [\App\Http\Controllers\ManualController::class, 'updateStep']);
-    // ステップ削除
-    Route::delete('/manuals/{manual}/steps/{step}', [\App\Http\Controllers\ManualController::class, 'deleteStep']);
-    // ステップ並び替え
-    Route::post('/manuals/{manual}/steps/reorder', [\App\Http\Controllers\ManualController::class, 'reorderSteps']);
+Route::middleware('auth:sanctum')->group(function () {
+
+    Route::post('/logout', [AuthController::class, 'logout']);
+    Route::get('/me',      [AuthController::class, 'me']);
+
+    // ── フォルダ管理 ──────────────────────────────
+    Route::get('/folders',           [ManualController::class, 'folders']);
+    Route::post('/folders',          [ManualController::class, 'createFolder']);
+    // ⚠️ /reorder は {id} より前に置く（順序重要）
+    Route::post('/folders/reorder',  [ManualController::class, 'reorderFolders']);
+    Route::put('/folders/{id}',      [ManualController::class, 'updateFolder']);
+    Route::delete('/folders/{id}',   [ManualController::class, 'deleteFolder']);
+
+    // ── フォルダ権限 ──────────────────────────────
+    Route::get('/folders/{id}/permissions',    [ManualController::class, 'folderPermissions']);
+    Route::post('/folders/{id}/permissions',   [ManualController::class, 'setFolderPermission']);
+    Route::delete('/folders/{id}/permissions', [ManualController::class, 'deleteFolderPermission']);
+
+    // ── マニュアル ────────────────────────────────
+    Route::get('/manuals',                      [ManualController::class, 'index']);
+    Route::post('/manuals/{manual}/videos',     [ManualController::class, 'uploadVideo']);
+
+    // ── ステップ ──────────────────────────────────
+    Route::get('/manuals/{manual}/steps',                      [ManualController::class, 'steps']);
+    Route::post('/manuals/{manual}/steps',                     [ManualController::class, 'addStep']);
+    // ⚠️ /reorder は {step} より前に置く（順序重要）
+    Route::post('/manuals/{manual}/steps/reorder',             [ManualController::class, 'reorderSteps']);
+    Route::put('/manuals/{manual}/steps/{step}',               [ManualController::class, 'updateStep']);
+    Route::delete('/manuals/{manual}/steps/{step}',            [ManualController::class, 'deleteStep']);
 });
